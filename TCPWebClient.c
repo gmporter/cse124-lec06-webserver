@@ -11,10 +11,10 @@
 #include "Practical.h"
 
 /* Given a url, return the server hostname/domain-name portion */
-void extractServerFromURL(const char const * url, char * buf, int buflen);
+void extractServerFromURL(const char * const url, char * buf, int buflen);
 
 /* Given a url, return the query part (after the server portion) */
-void extractQueryFromURL(const char const * url, char * buf, int buflen);
+void extractQueryFromURL(const char * const url, char * buf, int buflen);
 
 /* Given a sockaddr struct, return it as a string (from D&C book) */
 char * get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen);
@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
   char *url = argv[1];
   char serverStr[100];
   char queryStr[1024];
-  in_port_t servPort = 80;
   struct addrinfo hints, *servinfo, *p;
   int rv, sock;
 
@@ -47,7 +46,7 @@ int main(int argc, char *argv[]) {
 }
 
 void
-extractServerFromURL(const char const * url, char * buf, int buflen)
+extractServerFromURL(const char * const url, char * buf, int buflen)
 {
 	const char * PREAMBLE = "http://";
 	const int PREAMBLE_LEN = strlen(PREAMBLE);
@@ -57,8 +56,7 @@ extractServerFromURL(const char const * url, char * buf, int buflen)
 	}
 
 	const char * server = url+PREAMBLE_LEN;
-
-	char * slashptr = strstr(server, "/");
+	const char * slashptr = strstr(server, "/");
 
 	if (!slashptr) {
 		DieWithUserMessage("badurl", "No / after the server address");
@@ -73,7 +71,7 @@ extractServerFromURL(const char const * url, char * buf, int buflen)
 }
 
 void
-extractQueryFromURL(const char const * url, char * buf, int buflen)
+extractQueryFromURL(const char * const url, char * buf, int buflen)
 {
 	const char * PREAMBLE = "http://";
 	const int PREAMBLE_LEN = strlen(PREAMBLE);
@@ -83,8 +81,7 @@ extractQueryFromURL(const char const * url, char * buf, int buflen)
 	}
 
 	const char * server = url+PREAMBLE_LEN;
-
-	char * slashptr = strstr(server, "/");
+	const char * slashptr = strstr(server, "/");
 
 	if (!slashptr) {
 		DieWithUserMessage("badurl", "No / after the server address");
