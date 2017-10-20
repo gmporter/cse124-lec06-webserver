@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
 
     HandleTCPClient(clntSock); // Process client
     close(clntSock);
-    break;
   }
   // NOT REACHED
   close(servSock);
