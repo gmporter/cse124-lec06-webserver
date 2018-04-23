@@ -23,6 +23,22 @@ int main(int argc, char *argv[]) {
     // New connection creates a connected client socket
     int clntSock = AcceptTCPConnection(servSock);
 
+    struct timeval timeout;
+    timeout.tv_sec = 3;
+    timeout.tv_usec = 0;
+
+    if (setsockopt(clntSock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+    		   sizeof(timeout)) < 0)
+    {
+    	DieWithUserMessage("setsockopt", "SO_RCVTIMEO");
+    }
+
+    if (setsockopt(clntSock, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+    		   sizeof(timeout)) < 0)
+    {
+    	DieWithUserMessage("setsockopt", "SO_SNDTIMEO");
+    }
+
     HandleTCPClient(clntSock); // Process client
     close(clntSock);
   }
@@ -37,6 +53,12 @@ void HandleTCPClient(int clntSocket) {
   // Receive part of the request from the client
   ssize_t numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
 
+  if (numBytesRcvd < 0 && errno == EWOULDBLOCK) {
+  	printf("closing socket due to timeout\n");
+	close(clntSocket);
+	return;
+  }
+
   if (numBytesRcvd < 0)
     DieWithSystemMessage("recv() failed");
 
@@ -45,11 +67,17 @@ void HandleTCPClient(int clntSocket) {
   	printf("%s", buffer);
 
     // See if there is more data to receive
-    	memset(buffer, 0, BUFSIZE);
-    	numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
+	memset(buffer, 0, BUFSIZE);
+    numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
 
-    	if (numBytesRcvd < 0)
-      		DieWithSystemMessage("recv() failed");
+    if (numBytesRcvd < 0 && errno == EWOULDBLOCK) {
+	  printf("closing socket due to timeout\n");
+	  close(clntSocket);
+	  return;
+    }
+
+    if (numBytesRcvd < 0)
+      DieWithSystemMessage("recv() failed");
   }
 
   close(clntSocket); // Close client socket
